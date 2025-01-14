@@ -1,0 +1,18 @@
+:host ::ng-deep .ng-untouched .p-togglebutton-checked {
+    background-color: #E3F2FD !important; 
+    color: #1976D2 !important;
+    cursor: pointer;
+}
+
+:host-context(.my-app-dark) ::ng-deep .ng-untouched .p-togglebutton-checked {
+    background-color: #5c5c5c !important; /* Fundo escuro para modo escuro */
+    color: #E3F2FD !important; /* Texto branco ou outra cor clara */
+    cursor: pointer;
+}
+
+:host-context(.my-app-dark) ::ng-deep input {
+    background-color: black !important; /* Fundo escuro para modo escuro */
+    border-color: #5c5c5c !important; /* Fundo escuro para modo escuro */
+    color: #E3F2FD !important; /* Texto branco ou outra cor clara */
+    cursor: pointer;
+}
