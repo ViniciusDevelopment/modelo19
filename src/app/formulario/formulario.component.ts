@@ -59,29 +59,6 @@ export class FormularioComponent  {
 
   cost: number = 0;
 
-  convertISODateToLocal(isoString: string): Date {
-    if (!isoString || !isoString.includes('T')) {
-      console.error('Invalid ISO string:', isoString);
-      throw new Error('Invalid ISO date string');
-    }
-  
-    try {
-      const [datePart, timePart] = isoString.split('T');
-      const [year, month, day] = datePart.split('-').map(Number);
-      const timeParts = timePart.split(':').map(Number);
-  
-      const hour = timeParts[0];
-      const minute = timeParts[1];
-      const second = Math.floor(timeParts[2] || 0); // Trata frações de segundo
-  
-      // Cria um objeto Date no fuso horário local
-      return new Date(year, month - 1, day, hour, minute, second);
-    } catch (error) {
-      console.error('Error parsing ISO date string:', isoString, error);
-      throw new Error('Failed to parse ISO date string');
-    }
-  }
-
 
   ngOnInit(): void {
     this.form = new FormGroup({
@@ -96,13 +73,11 @@ export class FormularioComponent  {
         if (this.form.contains(key)) {
           try { 
             let value = params[key];
-            if (key === 'startDate' || key === 'endDate') { // Verifique se o campo é uma data
+            if (key === 'startDate' || key === 'endDate') { 
+
               console.log("value antes")
               console.log(value)
-              //value = this.convertToDate(value);
-              value = value.toISOString()
-              console.log("value depois")
-              console.log(value)
+              value = new Date(value);
               this.form.get(key)?.setValue(value);
             }
             else{
