@@ -8,12 +8,14 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { providePrimeNG } from 'primeng/config';
 import Lara from '@primeng/themes/lara';
 import MyLaraLightBluePreset from './estilo';
+import { fr } from "primelocale/fr.json"
 
 
 
 export const appConfig: ApplicationConfig = {
   providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes),provideAnimationsAsync(),provideHttpClient(withFetch()),
     providePrimeNG({
+      translation: fr,
         theme: {
           preset: MyLaraLightBluePreset,
           options: {

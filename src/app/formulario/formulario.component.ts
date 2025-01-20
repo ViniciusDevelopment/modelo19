@@ -12,7 +12,7 @@ import { FluidModule } from 'primeng/fluid';
 import { InputMaskModule } from 'primeng/inputmask';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { CurrencyMaskModule } from "ng2-currency-mask";
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 import { CarsModel } from '../models/carsmodel.model';
 
@@ -23,40 +23,99 @@ import { CarsModel } from '../models/carsmodel.model';
   styleUrl: './formulario.component.scss'
 })
 export class FormularioComponent  {
-  private router: Router
+  form!: FormGroup;
+  //private router: Router
 
-  constructor(router: Router) {
-    this.router = router;
+  constructor(
+    private fb: FormBuilder,
+    private route: ActivatedRoute, // Inject AcitvatedRoute here
+    private router: Router
+  ) {
+
+    this.form = this.fb.group({ // Initialize the form
+      details: [''], // Field that could store serialized object data
+    });
   }
 
-  form!: FormGroup;
-
-  ValidForm() {
+  ValidForm(): void {
     if (this.form.valid) {
-      console.log('form valid')
-      const queryParams = { ...this.form.value };
-      console.log(queryParams)
-      this.router.navigate([''], {
+      console.log('Form is valid');
+      const queryParams: any = { ...this.form.value }; // Get query params
+
+      for (const key in queryParams) {
+        if (typeof queryParams[key] === 'object') {
+          queryParams[key] = JSON.stringify(queryParams[key]);
+        }
+      }
+      
+      this.router.navigate([''], { // Navigate and update the URL with form data
         queryParams: queryParams,
-        queryParamsHandling: 'merge',
+        queryParamsHandling: 'merge', // Keeps existing query params
       });
     } else {
-      console.log('Form invalid!');
-
+      console.log('Form is invalid');
     }
   }
 
   cost: number = 0;
 
-  ngOnInit() {
-    this.form = new FormGroup({
-      selectedCarModel: new FormControl(this.selectedCarModel, Validators.required),
-      startDate: new FormControl(null, Validators.required),
-      endDate: new FormControl(null),
-      cost: new FormControl(this.cost, Validators.required),
-    });
+  convertISODateToLocal(isoString: string): Date {
+    if (!isoString || !isoString.includes('T')) {
+      console.error('Invalid ISO string:', isoString);
+      throw new Error('Invalid ISO date string');
+    }
+  
+    try {
+      const [datePart, timePart] = isoString.split('T');
+      const [year, month, day] = datePart.split('-').map(Number);
+      const timeParts = timePart.split(':').map(Number);
+  
+      const hour = timeParts[0];
+      const minute = timeParts[1];
+      const second = Math.floor(timeParts[2] || 0); // Trata frações de segundo
+  
+      // Cria um objeto Date no fuso horário local
+      return new Date(year, month - 1, day, hour, minute, second);
+    } catch (error) {
+      console.error('Error parsing ISO date string:', isoString, error);
+      throw new Error('Failed to parse ISO date string');
+    }
   }
 
+
+  ngOnInit(): void {
+    this.form = new FormGroup({
+          selectedCarModel: new FormControl(this.selectedCarModel, Validators.required),
+          startDate: new FormControl(null, Validators.required),
+          endDate: new FormControl(null,Validators.required),
+          cost: new FormControl(this.cost, Validators.required),
+        });
+        
+    this.route.queryParams.subscribe((params) => { // Read query parameters
+      for (const key in params) {
+        if (this.form.contains(key)) {
+          try { 
+            let value = params[key];
+            if (key === 'startDate' || key === 'endDate') { // Verifique se o campo é uma data
+              console.log("value antes")
+              console.log(value)
+              //value = this.convertToDate(value);
+              value = value.toISOString()
+              console.log("value depois")
+              console.log(value)
+              this.form.get(key)?.setValue(value);
+            }
+            else{
+              this.form.get(key)?.setValue(JSON.parse(params[key]));
+            }
+            
+          } catch {
+            this.form.get(key)?.setValue(params[key]); // Set the value to form
+          }
+        }
+      }
+    });
+  }
 
   carModels: CarsModel[] = [
     new CarsModel(1, 'Model 1'),
@@ -65,7 +124,4 @@ export class FormularioComponent  {
   ];
 
   selectedCarModel: CarsModel | null = null;
-
-
-
 }
